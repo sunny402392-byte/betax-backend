@@ -83,7 +83,7 @@ exports.requestWithdrawal = async (req, res) => {
     await user.save();
 
     // Save transaction
-    const id = generateCustomId({ prefix: "BSG-WD", max: 14, min: 14 });
+    const id = generateCustomId({ prefix: "BT7-WD", max: 14, min: 14 });
     await TransactionModel.create({
       id,
       user: userId,

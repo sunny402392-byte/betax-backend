@@ -271,7 +271,7 @@ const sponsorIncomeCalculate = async ({ userId, amount }) => {
 // ----------------- 3. LEVEL INCOMES (PROJECT DOC SPEC) -----------------
 const MINING_REWARD_PERCENTAGES = [
     0.03,    // L1 = 3%
-    0.02,    // L2 = 2%
+    0.01,    // L2 = 1%
     0.01,    // L3 = 1%
     0.01,    // L4 = 1%
     0.01,    // L5 = 1%

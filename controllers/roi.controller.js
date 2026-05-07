@@ -77,8 +77,8 @@ exports.calculateDailyROIForAllUsers = async (req, res) => {
 //=====================================SPONSOR INCOME=====================================//
 
 // Distribute 5% Sponsor Income on deposit with 300% capping
-// Referral Income Percentages per level
-const REFERRAL_PERCENTAGES = { 1: 10, 2: 3, 3: 2, 4: 1, 5: 1 };
+// Referral Income Percentages per level (Deposit Rewards)
+const REFERRAL_PERCENTAGES = { 1: 10, 2: 2, 3: 1 };
 
 exports.distributeSponsorIncome = async (userId, depositAmount) => {
   try {
@@ -101,7 +101,7 @@ exports.distributeSponsorIncome = async (userId, depositAmount) => {
 
     let currentUser = user;
 
-    for (let level = 1; level <= 5; level++) {
+    for (let level = 1; level <= 3; level++) {
       if (!currentUser.sponsor) break;
 
       const sponsor = await UserModel.findById(currentUser.sponsor);

@@ -771,8 +771,8 @@ exports.PackageInvestment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid amount" });
 
     const amountNumber = Number(amount);
-    if (amountNumber < 11)
-      return res.status(400).json({ success: false, message: "Minimum deposit amount is $11." });
+    if (amountNumber < 13)
+      return res.status(400).json({ success: false, message: "Minimum deposit amount is $13." });
 
     if (!txHash || !network)
       return res.status(400).json({ success: false, message: "Transaction hash and network are required." });

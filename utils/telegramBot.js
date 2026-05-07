@@ -40,7 +40,7 @@ const registerOrLoginTelegram = async ({ telegramId, username, firstName, referr
         sponsorFind = await UserModel.findOne({ referralLink: referralCode });
       }
 
-      const id = generateCustomId({ prefix: "BSG", min: 7, max: 7 });
+      const id = generateCustomId({ prefix: "BT7", min: 7, max: 7 });
       const hashedPassword = await bcrypt.hash(telegramId.toString() + id, 10);
 
       user = new UserModel({

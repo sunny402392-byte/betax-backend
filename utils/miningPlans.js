@@ -1,14 +1,14 @@
 // Shared Mining Plans - backend ke liye
 const MINING_PLANS = [
-  { level: 1, min: 11,    max: 60,      dailyPercent: 10 },
-  { level: 2, min: 61,    max: 200,     dailyPercent: 11 },
-  { level: 3, min: 201,   max: 600,     dailyPercent: 12 },
-  { level: 4, min: 601,   max: 2200,    dailyPercent: 13 },
-  { level: 5, min: 2201,  max: 5550,    dailyPercent: 14 },
-  { level: 6, min: 5551,  max: 9980,    dailyPercent: 15 },
-  { level: 7, min: 9981,  max: 21580,   dailyPercent: 16 },
-  { level: 8, min: 21581, max: 79880,   dailyPercent: 17 },
-  { level: 9, min: 79881, max: 1000000, dailyPercent: 18 },
+  { level: 1, min: 13,    max: 70,      dailyPercent: 4  },
+  { level: 2, min: 73,    max: 300,     dailyPercent: 5  },
+  { level: 3, min: 331,   max: 660,     dailyPercent: 6  },
+  { level: 4, min: 601,   max: 2250,    dailyPercent: 7  },
+  { level: 5, min: 2251,  max: 6000,    dailyPercent: 8  },
+  { level: 6, min: 6001,  max: 10000,   dailyPercent: 9  },
+  { level: 7, min: 10001, max: 25000,   dailyPercent: 10 },
+  { level: 8, min: 25001, max: 75000,   dailyPercent: 11 },
+  { level: 9, min: 75001, max: 1000000, dailyPercent: 12 },
 ];
 
 function getUserPlan(investment) {
