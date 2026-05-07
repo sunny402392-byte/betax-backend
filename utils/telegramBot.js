@@ -59,7 +59,6 @@ const registerOrLoginTelegram = async ({ telegramId, username, firstName, referr
       if (sponsorFind) {
         sponsorFind.partners.push(user._id);
         await sponsorFind.save();
-        // Add to team
         let sponsor = sponsorFind;
         while (sponsor) {
           sponsor.totalTeam += 1;
@@ -99,7 +98,6 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
   const referralCode = match[1]?.trim() || null;
 
   try {
-    // Register or login
     const result = await registerOrLoginTelegram({ telegramId, username, firstName, referralCode });
 
     if (!result.success) {
@@ -107,15 +105,23 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
       return;
     }
 
-    // Build login URL with token - user directly logged in
     const loginUrl = `${FRONTEND_URL}/tg-auth?token=${result.token}&uid=${result.user._id}&role=${result.user.role}`;
+    const displayName = firstName || username;
 
-    const displayName = msg.from.username ? `@${msg.from.username}` : firstName;
-    const welcomeText = result.isNew
-      ? `Hello, ${displayName}! 🚀 Get ready for an exciting adventure!\n\nJoin us, complete challenges, and earn crazy rewards, which will greatly enhance your gaming experience! Unleash the power of your team! Form a strong team and have more fun!\n\nClick *"Start Now"* to open a new chapter in the USDD encryption world!`
-      : `Welcome back, ${displayName}! 👋\n\nYour account is ready. Click *"Start Now"* to continue your mining journey!`;
+    const welcomeText =
+`🚀 Welcome to BITTRADE7 ${displayName} 🚀
 
-    // Get referral link for invite
+🌐 Smart Digital Platform with Mining Opportunities
+
+BITTRADE7 brings you a modern platform where technology, digital networking, and mining opportunities come together for a smarter future.
+
+⛏️ Mining Features:
+✅ Multiple Mining Levels
+✅ Daily Mining Rewards
+✅ Referral & Team Growth Benefits
+
+🔥 Start Your Digital Mining Journey Today!`;
+
     const referralLink = `${FRONTEND_URL}/register?ref=${result.user.referralLink}`;
     const shareText = encodeURIComponent(`🚀 Join BitTrade7 Mining!\n\nEarn daily crypto rewards by mining!\nUse my referral link to get started:\n${referralLink}`);
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${shareText}`;
