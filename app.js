@@ -34,8 +34,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:1437",
   "http://localhost:1438",
-  "https://avix.world",    // 👈 Apna main domain yahan dalein
-  "https://www.avix.world" // 👈 Agar admin panel alag domain par hai
+  "https://bittrade7.online",    // 👈 Main frontend domain
+  "https://www.bittrade7.online" // 👈 Admin frontend domain ya www wali site
 ];
 
 app.use(cors({
