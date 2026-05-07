@@ -167,8 +167,8 @@ PORT=3000
 
 ## 📝 Cookie Names
 
-- **User Cookie**: `bsg`
-- **Admin Cookie**: `bsg_admin`
+- **User Cookie**: `BT7`
+- **Admin Cookie**: `BT7_admin`
 
 ## 🛡️ Security Checklist
 

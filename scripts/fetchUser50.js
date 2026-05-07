@@ -33,7 +33,7 @@ async function fetchUser50Details() {
     // console.log('🔍 Fetching User50 details...\n');
 
     // Try multiple ways to find User50
-    let user = await UserModel.findOne({ id: 'BSG3560296' })
+    let user = await UserModel.findOne({ id: 'BT73560296' })
       .populate('sponsor', 'username id')
       .populate('incomeDetails');
     
@@ -52,7 +52,7 @@ async function fetchUser50Details() {
     if (!user) {
       // console.log('❌ User50 not found!');
       // console.log('💡 Tried searching by:');
-      // console.log('   - ID: BSG3560296');
+      // console.log('   - ID: BT73560296');
       // console.log('   - Username: user50');
       // console.log('   - Email: user50@test.com');
       return null;

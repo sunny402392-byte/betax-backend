@@ -20,10 +20,10 @@ async function quickFixUserInvestment() {
     const { TransactionModel } = require('../models/transaction.model');
     
     // Find user by custom ID
-    const user = await UserModel.findOne({ id: 'BSG3560296' });
+    const user = await UserModel.findOne({ id: 'BT73560296' });
     
     if (!user) {
-      // console.log('❌ User not found with ID BSG3560296!');
+      // console.log('❌ User not found with ID BT73560296!');
       return;
     }
 

@@ -42,7 +42,7 @@ node scripts/test-monthly-roi.js
 
 **Output:**
 ```
-User01 (ID: BSG1234567)
+User01 (ID: BT71234567)
 ────────────────────────────────────────────────────────────────────────────────
 💼 Investment: $1000.00
 👥 Direct Team: 1

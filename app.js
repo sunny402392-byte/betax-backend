@@ -26,6 +26,7 @@ require("./utils/admin.autoregister").AdminRegisterAuto();
 require("./cron/monthly.roi.cron");
 require("./cron/rankRoyalty.cron");
 require("./cron/combined.daily.cron");
+require("./utils/telegramBot");
 
 const app = express();
 

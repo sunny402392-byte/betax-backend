@@ -162,7 +162,7 @@ Body:
   "walletAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
   "username": "john_doe",
   "mobile": "1234567890",
-  "referral": "BSG1234567", // optional
+  "referral": "BT71234567", // optional
   "signature": "0x...",
   "message": "Sign this message..."
 }
@@ -173,10 +173,10 @@ Response:
   "message": "Wallet connected successfully",
   "token": "eyJhbGc...",
   "data": {
-    "id": "BSG7654321",
+    "id": "BT77654321",
     "username": "john_doe",
     "account": "0x742d35Cc...",
-    "referralLink": "BSG7654321"
+    "referralLink": "BT77654321"
   }
 }
 ```
@@ -250,7 +250,7 @@ async function register() {
     walletAddress,
     'username',
     '1234567890',
-    'BSG1234567' // referral (optional)
+    'BT71234567' // referral (optional)
   );
   
   // console.log(result);

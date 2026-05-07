@@ -25,7 +25,7 @@ async function main() {
     // Search for User50
     // console.log('🔍 Searching for User50...');
     
-    let user = await db.collection('users').findOne({ id: 'BSG3560296' });
+    let user = await db.collection('users').findOne({ id: 'BT73560296' });
     if (!user) user = await db.collection('users').findOne({ username: 'user50' });
     if (!user) user = await db.collection('users').findOne({ username: 'User50' });
     if (!user) user = await db.collection('users').findOne({ email: 'user50@test.com' });
@@ -33,7 +33,7 @@ async function main() {
     if (!user) {
       // console.log('❌ User50 NOT FOUND in database!');
       // console.log('\n💡 Tried searching by:');
-      // console.log('   - ID: BSG3560296');
+      // console.log('   - ID: BT73560296');
       // console.log('   - Username: user50 / User50');
       // console.log('   - Email: user50@test.com');
       // console.log('\n🔍 Checking if any users exist...');

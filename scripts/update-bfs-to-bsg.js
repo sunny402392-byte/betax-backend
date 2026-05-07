@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const { UserModel } = require('../models/user.model');
 
-const updateBFStoBSG = async () => {
+const updateBFStoBT7 = async () => {
     try {
         // console.log('🔌 Connecting to database...');
         await mongoose.connect(process.env.DATABASE_URL);
@@ -29,11 +29,11 @@ const updateBFStoBSG = async () => {
             const updates = {};
             
             if (user.id && user.id.startsWith('BFS')) {
-                updates.id = user.id.replace(/^BFS/i, 'BSG');
+                updates.id = user.id.replace(/^BFS/i, 'BT7');
             }
             
             if (user.referralLink && user.referralLink.includes('BFS')) {
-                updates.referralLink = user.referralLink.replace(/BFS/gi, 'BSG');
+                updates.referralLink = user.referralLink.replace(/BFS/gi, 'BT7');
             }
 
             if (Object.keys(updates).length > 0) {
@@ -55,4 +55,4 @@ const updateBFStoBSG = async () => {
     }
 };
 
-updateBFStoBSG();
+updateBFStoBT7();

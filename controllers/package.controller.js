@@ -9,7 +9,7 @@ exports.PackageCreate = async (req, res) => {
     const packageFind = await PackageModel.findOne({ title });
     if (packageFind) return res.status(500).json({ success: false, message: "Allready Package Created." });
     try {
-        const id = generateCustomId({ prefix: "BSG", min: 7, max: 7 });
+        const id = generateCustomId({ prefix: "BT7", min: 7, max: 7 });
         const pictureUrl = await uploadToImageKit(picture, 'Packages')
         const newPackage = new PackageModel({ id, title, minAmount, maxAmount, tags, picture: pictureUrl, percentage, status });
         await newPackage.save();

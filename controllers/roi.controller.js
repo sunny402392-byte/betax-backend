@@ -9,7 +9,7 @@ const { generateCustomId } = require("../utils/generator.uniqueid");
 const { getUserPlan } = require("../utils/miningPlans");
 
 // Excluded user IDs - these users and their referrals will not receive referral income
-const EXCLUDED_USER_IDS = ['BSG0506884', 'BSG7210166', 'BSG6645644'];
+const EXCLUDED_USER_IDS = ['BT70506884', 'BT77210166', 'BT76645644'];
 
 
 exports.calculateDailyROIForAllUsers = async (req, res) => {
@@ -149,7 +149,7 @@ exports.distributeSponsorIncome = async (userId, depositAmount) => {
       sponsor.markModified('withdrawalInfo');
       await sponsor.save();
 
-      const id = generateCustomId({ prefix: 'BSG-REF', max: 14, min: 14 });
+      const id = generateCustomId({ prefix: 'BT7-REF', max: 14, min: 14 });
       await CommissionIncome.create({
         id,
         user: sponsor._id,
@@ -266,7 +266,7 @@ exports.distributeGenerationROI = async (userId, roiAmount) => {
           await income.save();
 
 
-          const id = generateCustomId({ prefix: 'BSG-LVL', max: 14, min: 14 });
+          const id = generateCustomId({ prefix: 'BT7-LVL', max: 14, min: 14 });
           const days = await CommissionIncome.find({ user: upline._id, fromUser: userId, type: "Level Income", status: "Completed" })
           const newLevel = new CommissionIncome({ id, user: upline._id, fromUser: userId, level: level, income: genIncome, percentage: percent * 100, amount: Number(roiAmount), days: Number(days.length + 1), type: "Level Income", status: "Completed" });
 

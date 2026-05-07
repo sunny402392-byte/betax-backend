@@ -114,7 +114,7 @@
 - ✅ Sponsor total income < 300% cap (3X)
 **Calculation:** 5% of deposit amount
 **Wallet:** Goes to `currentIncome`
-**Excluded Users:** `['BSG0506884', 'BSG7210166', 'BSG6645644']`
+**Excluded Users:** `['BT70506884', 'BT77210166', 'BT76645644']`
 
 ### 🔟 Level Income (10 Levels)
 **Trigger:** When user makes deposit
@@ -128,7 +128,7 @@
 **Percentages:**
 - L1: 10%, L2: 5%, L3: 3%, L4-5: 2%, L6-10: 1%
 **Wallet:** Goes to `levelIncomeWallet` (separate wallet)
-**Excluded Users:** `['BSG0506884', 'BSG7210166', 'BSG6645644']`
+**Excluded Users:** `['BT70506884', 'BT77210166', 'BT76645644']`
 
 ---
 

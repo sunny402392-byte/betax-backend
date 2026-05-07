@@ -12,7 +12,7 @@ exports.RewardCreate = async (req, res) => {
   const { title, investment, percentage, reward, type, picture } = req.body;
   if (!title || !investment) return res.status(400).json({ success: false, message: "Title and investment required." });
   try {
-    const id = generateCustomId({ prefix: "BSG-RWD", min: 10, max: 10 });
+    const id = generateCustomId({ prefix: "BT7-RWD", min: 10, max: 10 });
     const pictureUrl = picture ? await uploadToImageKit(picture, 'Rewards') : null;
     const newReward = await RewardModel.create({ id, title, investment, percentage, reward, type, picture: pictureUrl });
     res.status(201).json({ success: true, message: 'Reward created successfully', data: newReward });
@@ -205,7 +205,7 @@ exports.distributeMonthlyRankRewards = async () => {
       income.income.totalIncome += rankData.payout;
       await income.save();
       
-      const id = generateCustomId({ prefix: 'BSG-RNK', max: 14, min: 14 });
+      const id = generateCustomId({ prefix: 'BT7-RNK', max: 14, min: 14 });
       await CommissionIncome.create({
         id,
         user: user._id,
@@ -325,7 +325,7 @@ exports.calculateMonthlyRoyalty = async () => {
       income.income.totalIncome += share;
       await income.save();
       
-      const id = generateCustomId({ prefix: 'BSG-ROY', max: 14, min: 14 });
+      const id = generateCustomId({ prefix: 'BT7-ROY', max: 14, min: 14 });
       await CommissionIncome.create({
         id,
         user: qualified.user._id,

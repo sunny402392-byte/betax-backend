@@ -154,6 +154,10 @@ const userSchema = new mongoose.Schema({
         withdrawnAmount: {
             type: Number,
             default: 0
+        },
+        lastWithdrawalAt: {
+            type: Date,
+            default: null
         }
     },
     supports: [{

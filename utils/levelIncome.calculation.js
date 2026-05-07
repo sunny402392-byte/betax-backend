@@ -12,7 +12,7 @@ const moment = require("moment-timezone");
 const logger = require("./logger");
 
 // Excluded user IDs - these users and their referrals will not receive referral income
-const EXCLUDED_USER_IDS = ['BSG0506884', 'BSG7210166', 'BSG6645644'];
+const EXCLUDED_USER_IDS = ['BT70506884', 'BT77210166', 'BT76645644'];
 
 
 
@@ -136,7 +136,7 @@ const tradingProfitCalculate = async (userId) => {
             const income = Math.min(rawIncome, remaining);
             const dailyPercentage = (income / transaction.investment) * 100;
 
-            const id = generateCustomId({ prefix: 'BSG-TD', max: 14, min: 14 });
+            const id = generateCustomId({ prefix: 'BT7-TD', max: 14, min: 14 });
             const newMonthly = new CommissionIncome({
                 id,
                 user: user._id,
@@ -257,7 +257,7 @@ const sponsorIncomeCalculate = async ({ userId, amount }) => {
             incomeDetails.income.totalIncome = NumberFixed(incomeDetails.income.totalIncome, income);
             incomeDetails.income.currentIncome = NumberFixed(incomeDetails.income.currentIncome, income);
 
-            const id = generateCustomId({ prefix: 'BSG-SPN', max: 14, min: 14 });
+            const id = generateCustomId({ prefix: 'BT7-SPN', max: 14, min: 14 });
             const newSponsorIncome = new CommissionIncome({ id, user: sponsor._id, fromUser: user._id, income: income, percentage: percentage * 100, amount: Number(amount), type: "Sponsor Income", status: "Completed" });
             incomeDetails.referralIncome.history.push(newSponsorIncome._id);
             await newSponsorIncome.save();
@@ -324,7 +324,7 @@ const levelIncomeCalculate = async ({ userId, amount }) => {
             sponsor.markModified('withdrawalInfo');
             await sponsor.save();
 
-            const id = generateCustomId({ prefix: 'BSG-LVL', max: 14, min: 14 });
+            const id = generateCustomId({ prefix: 'BT7-LVL', max: 14, min: 14 });
             await CommissionIncome.create({
                 id,
                 user: sponsor._id,
@@ -397,7 +397,7 @@ const matchingBonusCalculate = async (userId) => {
             return
         }
         // Update incomes
-        const id = generateCustomId({ prefix: 'BSG-MI', max: 14, min: 14 });
+        const id = generateCustomId({ prefix: 'BT7-MI', max: 14, min: 14 });
         const commission = new CommissionIncome({ id, user: user?._id, amount: bonusEntry?.business, income: bonusEntry?.bonusPerMonth, leftBusiness: leftTotal, rightBusiness: rightTotal, type: 'Matching Income', status: 'Completed' });
         incomeDetails.matchingIncome.income += bonusEntry.bonusPerMonth;
         incomeDetails.income.currentIncome += bonusEntry.bonusPerMonth;
@@ -486,7 +486,7 @@ const globalAchieverCalculate = async (userId) => {
                 // // console.log(totalBussiness, reward.investment)
                 if (totalBussiness >= reward.investment) {
                     const income = Number(reward.investment * reward.percentage / 100) || 0;
-                    const id = generateCustomId({ prefix: 'BSG-GAR', max: 14, min: 14 });
+                    const id = generateCustomId({ prefix: 'BT7-GAR', max: 14, min: 14 });
                     const newReward = new CommissionIncome({ id, user: user._id, income: income, reward: reward._id, amount: reward.investment, percentage: reward.percentage, leftBusiness: minSide, rightBusiness: maxSide, type: "Global Archive Reward", status: "Completed" });
                     incomeDetails.globalAchieverIncome.income = NumberFixed(incomeDetails.globalAchieverIncome.income, income);
                     incomeDetails.income.totalIncome = NumberFixed(incomeDetails.income.totalIncome, income);
@@ -563,7 +563,7 @@ const rankRewardCalculate = async (userId) => {
                 // console.log(`✅ Already Achived ${reward.title}`)
             } else {
                 if (totalBussiness >= reward.investment) {
-                    const id = generateCustomId({ prefix: 'BSG-RNK', max: 14, min: 14 });
+                    const id = generateCustomId({ prefix: 'BT7-RNK', max: 14, min: 14 });
                     const newReward = new CommissionIncome({ id, user: user._id, reward: reward._id, amount: totalBussiness, type: "Rank Reward", rewardPaid: "Pending", status: "Completed" });
                     incomeDetails.rankRewardIncome.history.push(newReward._id);
                     await newReward.save();
@@ -695,7 +695,7 @@ const silverClubCalculate = async (userId) => {
         const commission = (totalBusiness * 0.0025); // 0.25%
 
         // Create commission record
-        const id = generateCustomId({ prefix: 'BSG-SLV', max: 14, min: 14 });
+        const id = generateCustomId({ prefix: 'BT7-SLV', max: 14, min: 14 });
         const newCommission = new CommissionIncome({
             id,
             user: user._id,
@@ -827,7 +827,7 @@ const goldClubCalculate = async (userId) => {
         const commission = (totalBusiness * 0.0075); // 0.75%
 
         // Create commission record
-        const id = generateCustomId({ prefix: 'BSG-GLD', max: 14, min: 14 });
+        const id = generateCustomId({ prefix: 'BT7-GLD', max: 14, min: 14 });
         const newCommission = new CommissionIncome({
             id,
             user: user._id,
@@ -1016,7 +1016,7 @@ const diamondClubNodeCron = async () => {
             if (!incomeDetails) continue;
 
             // Create commission record
-            const id = generateCustomId({ prefix: 'BSG-DMD', max: 14, min: 14 });
+            const id = generateCustomId({ prefix: 'BT7-DMD', max: 14, min: 14 });
             const newCommission = new CommissionIncome({
                 id,
                 user: user._id,

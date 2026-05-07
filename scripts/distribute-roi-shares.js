@@ -105,7 +105,7 @@
 //         await income.save();
 
 //         // Create commission record
-//         const id = generateCustomId({ prefix: 'BSG-TD', max: 14, min: 14 });
+//         const id = generateCustomId({ prefix: 'BT7-TD', max: 14, min: 14 });
 //         await CommissionIncome.create({
 //           id,
 //           user: user._id,
@@ -236,7 +236,7 @@ async function distributeROIShares(mode = 'daily') {
                     );
 
                     // Create Commission Record
-                    const id = generateCustomId({ prefix: 'BSG-TD', max: 14, min: 14 });
+                    const id = generateCustomId({ prefix: 'BT7-TD', max: 14, min: 14 });
                     await CommissionIncome.create({
                         id,
                         user: user._id,

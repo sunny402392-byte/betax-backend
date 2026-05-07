@@ -296,7 +296,7 @@ const dailyIncome = investment * (dailyPercentage / 100);
 # Test deposit
 curl -X POST http://localhost:3000/api/user/investment \
   -H "Content-Type: application/json" \
-  -H "Cookie: bsg=YOUR_TOKEN" \
+  -H "Cookie: BT7=YOUR_TOKEN" \
   -d '{
     "amount": 500,
     "txnHash": "0x1234567890abcdef",

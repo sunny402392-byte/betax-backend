@@ -18,7 +18,7 @@ async function testUser50API() {
     // Find User50
     const user = await UserModel.findOne({ 
       $or: [
-        { id: 'BSG3560296' },
+        { id: 'BT73560296' },
         { username: 'User50' },
         { username: 'user50' }
       ]

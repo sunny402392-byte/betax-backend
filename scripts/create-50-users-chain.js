@@ -40,7 +40,7 @@ async function create50Users() {
     let packageDoc = await PackageModel.findOne({ title: 'Test Package' });
     if (!packageDoc) {
       packageDoc = await PackageModel.create({
-        id: generateCustomId({ prefix: 'BSG-PKG', min: 10, max: 10 }),
+        id: generateCustomId({ prefix: 'BT7-PKG', min: 10, max: 10 }),
         title: 'Test Package',
         minAmount: 100,
         maxAmount: 50000,
@@ -54,7 +54,7 @@ async function create50Users() {
 
     for (let i = 1; i <= 50; i++) {
       const pkg = getRandomPackage();
-      const userId = generateCustomId({ prefix: 'BSG', min: 7, max: 7 });
+      const userId = generateCustomId({ prefix: 'BT7', min: 7, max: 7 });
       const username = `User${i.toString().padStart(2, '0')}`;
       const walletAddress = `0x${Math.random().toString(16).substr(2, 40)}`;
 
@@ -91,7 +91,7 @@ async function create50Users() {
       }
 
       // Create deposit transaction
-      const txId = generateCustomId({ prefix: 'BSG-TX', min: 14, max: 14 });
+      const txId = generateCustomId({ prefix: 'BT7-TX', min: 14, max: 14 });
       const transaction = await TransactionModel.create({
         id: txId,
         user: newUser._id,

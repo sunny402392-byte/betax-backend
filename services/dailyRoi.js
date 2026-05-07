@@ -60,7 +60,7 @@ exports.calculateMonthlyROIForUsers = async () => {
       income.income.totalIncome += finalROI;
       await income.save();
 
-      const id = generateCustomId({ prefix: 'BSG-TD', max: 14, min: 14 });
+      const id = generateCustomId({ prefix: 'BT7-TD', max: 14, min: 14 });
       await CommissionIncome.create({
         id,
         user: user._id,
@@ -140,7 +140,7 @@ exports.calculateDailyROIForUsers = async () => {
       income.income.totalIncome += finalROI;
       await income.save();
 
-      const id = generateCustomId({ prefix: 'BSG-TD', max: 14, min: 14 });
+      const id = generateCustomId({ prefix: 'BT7-TD', max: 14, min: 14 });
       await CommissionIncome.create({
         id,
         user: user._id,
@@ -209,7 +209,7 @@ exports.calculateDailyROIForUser = async (userId) => {
     income.income.totalIncome = (income.income.totalIncome || 0) + finalROI;
     await income.save();
 
-    const id = generateCustomId({ prefix: 'BSG-TD', max: 14, min: 14 });
+    const id = generateCustomId({ prefix: 'BT7-TD', max: 14, min: 14 });
     await CommissionIncome.create({
       id,
       user: user._id,

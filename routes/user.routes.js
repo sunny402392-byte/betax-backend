@@ -13,6 +13,22 @@ router.get('/verify-referral/:referralCode', verifyReferralCode);
 
 router.get('/get-referral-program', isLoggedIn, UserController.getReferralProgram);
 
+// Telegram auto-register
+router.post("/telegram-register", async (req, res) => {
+  try {
+    const { telegramId, username, referralCode } = req.body;
+    if (!telegramId || !username)
+      return res.status(400).json({ success: false, message: "telegramId and username required" });
+    const botModule = require("../utils/telegramBot");
+    if (!botModule || !botModule.autoRegisterFromTelegram)
+      return res.status(503).json({ success: false, message: "Telegram bot not configured" });
+    const result = await botModule.autoRegisterFromTelegram({ telegramId, username, referralCode });
+    return res.status(200).json(result);
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 router.get('/get-user', isLoggedIn, UserController.getUser);
 router.post("/update-profile", isLoggedIn, UserController.updateProfile);
 // ----------------------- AUTH START -----------------------
@@ -40,6 +56,8 @@ router.get('/get-income-balance', isLoggedIn, UserController.getAvailableIncomeB
 router.post('/reinvest', isLoggedIn, UserController.reinvestFromIncome);
 router.get('/get-reinvestment-history', isLoggedIn, UserController.getReinvestmentHistory);
 router.get('/get-withdrawal-history', isLoggedIn, UserController.getWithdrawalReports);
+const WithdrawalController = require('../controllers/withdrawal.controller');
+router.post('/tx/withdrawal-request', isLoggedIn, WithdrawalController.requestWithdrawal);
 router.post("/investment", isLoggedIn, UserController.PackageInvestment);
 router.get("/deposit-wallets", isLoggedIn, UserController.getDepositWallets);
 

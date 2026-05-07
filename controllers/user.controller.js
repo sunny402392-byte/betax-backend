@@ -1721,7 +1721,7 @@ exports.reinvestFromIncome = async (req, res) => {
 
     // Generate transaction ID
     const { generateCustomId } = require("../utils/generator.uniqueid");
-    const transactionId = generateCustomId({ prefix: 'BSG-REINV', max: 14, min: 14 });
+    const transactionId = generateCustomId({ prefix: 'BT7-REINV', max: 14, min: 14 });
 
     // Create transaction record
     await TransactionModel.create(

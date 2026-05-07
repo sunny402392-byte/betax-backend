@@ -23,14 +23,35 @@ async function addToSponsorTeam(userId, sponsorId) {
 exports.WalletRegister = async (req, res) => {
   const { email, password, username, referral, mobile, telegram } = req.body;
   try {
-    if (!email || !password || !username)
-      return res.status(400).json({ success: false, message: "Email, password & username required." });
+    if (!username || !password)
+      return res.status(400).json({ success: false, message: "Username and password required." });
 
-    const existing = await UserModel.findOne({ email });
-    if (existing)
-      return res.status(400).json({ success: false, message: "Email already registered." });
+    // At least one contact required
+    if (!email && !mobile && !telegram)
+      return res.status(400).json({ success: false, message: "At least one of Email, Mobile, or Telegram ID is required." });
 
-    const id = generateCustomId({ prefix: "BSG", min: 7, max: 7 });
+    // Check email uniqueness only if provided
+    if (email) {
+      const existing = await UserModel.findOne({ email });
+      if (existing)
+        return res.status(400).json({ success: false, message: "Email already registered." });
+    }
+
+    // Check telegram uniqueness only if provided
+    if (telegram) {
+      const existingTg = await UserModel.findOne({ telegram });
+      if (existingTg)
+        return res.status(400).json({ success: false, message: "Telegram ID already registered." });
+    }
+
+    // Check mobile uniqueness only if provided
+    if (mobile) {
+      const existingMobile = await UserModel.findOne({ mobile });
+      if (existingMobile)
+        return res.status(400).json({ success: false, message: "Mobile number already registered." });
+    }
+
+    const id = generateCustomId({ prefix: "BT7", min: 7, max: 7 });
 
     let sponsorFind = null;
     if (referral) {
@@ -76,7 +97,7 @@ exports.WalletRegister = async (req, res) => {
       sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000,
     };
-    res.cookie("bsg", token, cookieOptions);
+    res.cookie("BT7", token, cookieOptions);
 
     logger.info('Registration successful', { userId: newUser._id, email, username, ip: req.ip });
 
@@ -122,7 +143,7 @@ exports.WalletLogin = async (req, res) => {
       sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000,
     };
-    res.cookie('bsg', token, cookieOptions);
+    res.cookie('BT7', token, cookieOptions);
 
     logger.info('Login successful', { userId: user._id, loginType, username: user.username, ip: req.ip });
 

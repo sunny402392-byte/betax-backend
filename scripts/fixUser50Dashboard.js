@@ -14,7 +14,7 @@ async function fixUser50Dashboard() {
     // Find User50
     const user = await db.collection('users').findOne({
       $or: [
-        { id: 'BSG3560296' },
+        { id: 'BT73560296' },
         { username: 'User50' },
         { username: 'user50' }
       ]

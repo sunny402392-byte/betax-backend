@@ -91,7 +91,7 @@ const calculateInvestmentBasedProfit = async (user, targetDate) => {
     }
 
     // Create commission record with backdated createdAt
-    const id = generateCustomId({ prefix: 'BSG-TD', max: 14, min: 14 });
+    const id = generateCustomId({ prefix: 'BT7-TD', max: 14, min: 14 });
     const newMonthly = new CommissionIncome({
       id,
       user: user._id,
@@ -218,7 +218,7 @@ const calculateTradingProfitForDate = async (user, targetDate) => {
       }
 
       // Create commission record with backdated createdAt
-      const id = generateCustomId({ prefix: 'BSG-TD', max: 14, min: 14 });
+      const id = generateCustomId({ prefix: 'BT7-TD', max: 14, min: 14 });
       const newMonthly = new CommissionIncome({
         id,
         user: user._id,

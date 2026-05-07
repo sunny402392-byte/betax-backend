@@ -63,7 +63,7 @@ exports.DollarBankInvestment = async (req, res) => {
     maturityDate.setFullYear(maturityDate.getFullYear() + 1);
 
     // Generate transaction ID
-    const transactionId = generateCustomId({ prefix: "BSG-TX", min: 10, max: 10 });
+    const transactionId = generateCustomId({ prefix: "BT7-TX", min: 10, max: 10 });
     
     // Create transaction record
     const newTransaction = new TransactionModel({
@@ -198,7 +198,7 @@ exports.DollarBankWithdrawal = async (req, res) => {
     const netAmount = dollarBankInvestment.totalAmount - gasFee;
 
     // Generate transaction ID
-    const transactionId = generateCustomId({ prefix: "BSG-TX", min: 10, max: 10 });
+    const transactionId = generateCustomId({ prefix: "BT7-TX", min: 10, max: 10 });
 
     // Create withdrawal transaction
     const withdrawalTransaction = new TransactionModel({
@@ -458,7 +458,7 @@ exports.TransferFromWithdrawalWalletToDollarBank = async (req, res) => {
     maturityDate.setFullYear(maturityDate.getFullYear() + 1);
 
     // Generate transaction ID
-    const transactionId = generateCustomId({ prefix: "BSG-TX", min: 10, max: 10 });
+    const transactionId = generateCustomId({ prefix: "BT7-TX", min: 10, max: 10 });
     
     // Create transaction record
     const newTransaction = new TransactionModel({

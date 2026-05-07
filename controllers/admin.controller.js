@@ -52,7 +52,7 @@ exports.AdminLogin = async (req, res) => {
             maxAge: 30 * 24 * 60 * 60 * 1000
         };
         
-        res.cookie('bsg_admin', token, cookieOptions);
+        res.cookie('BT7_admin', token, cookieOptions);
         
         logger.info('Admin login successful', { adminId: admin._id, email: admin.email, ip: req.ip });
         
@@ -89,7 +89,7 @@ exports.ChangePassword = async (req, res) => {
 
 exports.AdminLogout = async (req, res) => {
     try {
-        const token = req.cookies?.bsg_admin;
+        const token = req.cookies?.BT7_admin;
         const admin = await AdminModel.findById(req.admin._id);
         
         if (admin && token) {
@@ -107,7 +107,7 @@ exports.AdminLogout = async (req, res) => {
             sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
         };
         
-        res.clearCookie('bsg_admin', cookieOptions);
+        res.clearCookie('BT7_admin', cookieOptions);
         
         return res.status(200).json({ success: true, message: 'Admin Logout successful' });
     } catch (error) {

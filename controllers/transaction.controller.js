@@ -45,7 +45,7 @@ exports.WalletInvestmentRequest = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
-    const id = generateCustomId({ prefix: "BSG-TX", max: 14, min: 14 });
+    const id = generateCustomId({ prefix: "BT7-TX", max: 14, min: 14 });
     const packageFind = await PackageModel.findById(packageId);
     if (!packageFind)
       return res
@@ -112,7 +112,7 @@ exports.WalletInvestmentRequest = async (req, res) => {
 //         if (incomeDetail.income.currentIncome < amountNumber) return res.status(500).json({ success: false, message: `Insufficient USDT balance.` });
 //         const hash = await sendUsdtWithdrawal({ amount:amountNumber*0.9, toAddress: user.account, symbol: "USDT" });
 //         if (!hash) return res.status({ success: false, message: 'Withdrawal failed. Possibly insufficient platform balance.' });
-//         const id = await generateCustomId({ prefix: "BSG-TX", min: 10, max: 10 });
+//         const id = await generateCustomId({ prefix: "BT7-TX", min: 10, max: 10 });
 //         const newWith = new TransactionModel({ id, clientAddress: user.account, mainAddress: process.env.WALLET_ADDRESS, hash,percentage:10,role:'USER', investment: amount,user:user._id, status: "Completed", type: "Withdrawal" });
 //         incomeDetail.withdrawal.amount += Number(amount);
 //         incomeDetail.income.currentIncome -= Number(amount);
@@ -203,7 +203,7 @@ exports.WalletWithdrawalRequest = async (req, res) => {
     const netAmount = amountNumber - charges;
 
     // Generate transaction
-    const id = await generateCustomId({ prefix: "BSG-TX", min: 10, max: 10 });
+    const id = await generateCustomId({ prefix: "BT7-TX", min: 10, max: 10 });
     const newWith = new TransactionModel({
       id,
       clientAddress: walletAddress,
@@ -322,7 +322,7 @@ exports.PrincipalWithdrawalRequest = async (req, res) => {
     const netAmount = amountNumber;
 
     // Generate transaction
-    const id = await generateCustomId({ prefix: "BSG-PR", min: 10, max: 10 });
+    const id = await generateCustomId({ prefix: "BT7-PR", min: 10, max: 10 });
     const newWith = new TransactionModel({
       id,
       clientAddress: walletAddress,
@@ -445,7 +445,7 @@ exports.WalletDepositAmount = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Minimum deposit amount is $100." });
 
-    const id = await generateCustomId({ prefix: "BSG-TX", min: 10, max: 10 });
+    const id = await generateCustomId({ prefix: "BT7-TX", min: 10, max: 10 });
     const newWith = new TransactionModel({
       id,
       clientAddress: "Manually Investment",
@@ -493,7 +493,7 @@ exports.WalletDepositAmountBlockchain = async (req, res) => {
     if (existingTx)
       return res.status(409).json({ success: false, message: "Transaction already processed." });
 
-    const id = await generateCustomId({ prefix: "BSG-TX", min: 10, max: 10 });
+    const id = await generateCustomId({ prefix: "BT7-TX", min: 10, max: 10 });
     
     // Create transaction with Completed status
     const newDeposit = new TransactionModel({
@@ -731,7 +731,7 @@ exports.depositFromROIWallet = async (req, res) => {
     }
 
     // Create transaction record
-    const transactionId = generateCustomId({ prefix: 'BSG-DEP', max: 14, min: 14 });
+    const transactionId = generateCustomId({ prefix: 'BT7-DEP', max: 14, min: 14 });
     const newTransaction = await TransactionModel.create([{
       id: transactionId,
       user: userId,
@@ -926,7 +926,7 @@ exports.depositForOtherUser = async (req, res) => {
       }
 
       // Create transaction record for target user
-      const transactionId = generateCustomId({ prefix: 'BSG-TOP', max: 14, min: 14 });
+      const transactionId = generateCustomId({ prefix: 'BT7-TOP', max: 14, min: 14 });
       const newTransaction = await TransactionModel.create([{
         id: transactionId,
         user: targetUserInSession._id,
@@ -1094,11 +1094,11 @@ exports.transferROIWallet = async (req, res) => {
     targetIncomeDetails.income.roiWallet = (targetIncomeDetails.income.roiWallet || 0) + transferAmount;
 
     // Create transaction records
-    const transferId = generateCustomId({ prefix: 'BSG-TRF', max: 14, min: 14 });
+    const transferId = generateCustomId({ prefix: 'BT7-TRF', max: 14, min: 14 });
 
     // Transaction for sender
     const fromTransaction = await TransactionModel.create([{
-      id: generateCustomId({ prefix: 'BSG-TRF', max: 14, min: 14 }),
+      id: generateCustomId({ prefix: 'BT7-TRF', max: 14, min: 14 }),
       user: fromUserId,
       investment: transferAmount,
       type: "Transfer",

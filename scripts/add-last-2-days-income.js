@@ -88,7 +88,7 @@ async function addLast2DaysIncome() {
       await income.save();
 
       // Create commission record with Day 1 date
-      const id = generateCustomId({ prefix: 'BSG-TD', max: 14, min: 14 });
+      const id = generateCustomId({ prefix: 'BT7-TD', max: 14, min: 14 });
       const commission = await CommissionIncome.create({
         id,
         user: user._id,
@@ -168,7 +168,7 @@ async function addLast2DaysIncome() {
       await income.save();
 
       // Create commission record with Day 2 date
-      const id = generateCustomId({ prefix: 'BSG-TD', max: 14, min: 14 });
+      const id = generateCustomId({ prefix: 'BT7-TD', max: 14, min: 14 });
       await CommissionIncome.create({
         id,
         user: user._id,

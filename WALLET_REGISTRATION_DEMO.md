@@ -15,7 +15,7 @@
 {
   "walletAddress": "0x8Ba1f109551bD432803012645Ac136ddd64DBA72",
   "username": "alice_smith",
-  "referral": "BSG1234567"
+  "referral": "BT71234567"
 }
 ```
 
@@ -31,14 +31,14 @@
 {
   "walletAddress": "0x2345678901234567890123456789012345678901",
   "username": "user_two",
-  "referral": "BSG1234567"  // User 1's referral code
+  "referral": "BT71234567"  // User 1's referral code
 }
 
 // User 3 - Referred by User 2
 {
   "walletAddress": "0x3456789012345678901234567890123456789012",
   "username": "user_three",
-  "referral": "BSG7654321"  // User 2's referral code
+  "referral": "BT77654321"  // User 2's referral code
 }
 ```
 
@@ -63,7 +63,7 @@ curl -X POST http://localhost:3000/api/user/register \
   -d '{
     "walletAddress": "0x8Ba1f109551bD432803012645Ac136ddd64DBA72",
     "username": "alice_smith",
-    "referral": "BSG1234567"
+    "referral": "BT71234567"
   }'
 ```
 
@@ -91,7 +91,7 @@ Body (raw JSON):
 {
   "walletAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
   "username": "john_doe",
-  "referral": "BSG1234567"
+  "referral": "BT71234567"
 }
 ```
 
@@ -126,12 +126,12 @@ const testUsers = [
   {
     walletAddress: "0x8Ba1f109551bD432803012645Ac136ddd64DBA72",
     username: "alice_smith",
-    referral: "BSG1234567"  // Will be updated after first user registration
+    referral: "BT71234567"  // Will be updated after first user registration
   },
   {
     walletAddress: "0x9Cd1f109551bD432803012645Ac136ddd64DBA83",
     username: "bob_jones",
-    referral: "BSG1234567"  // Will be updated
+    referral: "BT71234567"  // Will be updated
   }
 ];
 
@@ -308,10 +308,10 @@ export default function TestWalletRegistration() {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "data": {
     "_id": "65f1234567890abcdef12345",
-    "id": "BSG1234567",
+    "id": "BT71234567",
     "username": "john_doe",
     "account": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-    "referralLink": "BSG1234567",
+    "referralLink": "BT71234567",
     "active": {
       "isVerified": true,
       "isActive": false,

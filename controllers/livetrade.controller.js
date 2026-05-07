@@ -26,7 +26,7 @@ exports.LiveTrading = async (req, res) => {
     if (totalInvestment === 0) {
       return res.status(400).json({ success: false, message: "No deposit found for LIVE AC package." });
     }
-    const id = generateCustomId({ prefix: 'BSG-LIVE', max: 14, min: 14 });
+    const id = generateCustomId({ prefix: 'BT7-LIVE', max: 14, min: 14 });
     const percentage = (amount / totalInvestment) * 100;
     const newCommission = new CommissionIncome({ id, amount: totalInvestment, percentage, tx: transactionIds?.[transactionIds?.length - 1], income:amount, user: user._id, package: packageFind._id, type: "Live Trading Income", status: "Completed" })
     incomeDetails.liveIncome.income = NumberFixed(incomeDetails.liveIncome.income, amount);

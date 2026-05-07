@@ -15,7 +15,7 @@ async function calculateADA1LevelIncome() {
 
         // Find ADA1
         const ada1 = await UserModel.findOne({ 
-            $or: [{ username: 'ADA1' }, { id: 'BSG5011940' }] 
+            $or: [{ username: 'ADA1' }, { id: 'BT75011940' }] 
         });
 
         if (!ada1) {

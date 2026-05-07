@@ -39,7 +39,7 @@ async function addProfitToUser(userId, profitAmount) {
     incomeDetails.income.totalIncome += profitAmount;
 
     // Create commission record
-    const commissionId = generateCustomId({ prefix: 'BSG-PROFIT', max: 14, min: 14 });
+    const commissionId = generateCustomId({ prefix: 'BT7-PROFIT', max: 14, min: 14 });
     const commissionRecord = new CommissionIncome({
       id: commissionId,
       user: user._id,
@@ -89,7 +89,7 @@ async function addProfitToUser(userId, profitAmount) {
 
 // Run if called directly
 if (require.main === module) {
-  const userId = process.argv[2] || "BSG5908491";
+  const userId = process.argv[2] || "BT75908491";
   const profitAmount = parseFloat(process.argv[3]) || 200;
 
   addProfitToUser(userId, profitAmount)

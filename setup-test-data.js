@@ -27,7 +27,7 @@ async function addToSponsorTeam(userId, sponsorId) {
 }
 
 async function createUser(username, walletAddress, sponsorUser = null) {
-  const id = generateCustomId({ prefix: 'BSG', min: 7, max: 7 });
+  const id = generateCustomId({ prefix: 'BT7', min: 7, max: 7 });
   
   const newUser = new UserModel({
     id,

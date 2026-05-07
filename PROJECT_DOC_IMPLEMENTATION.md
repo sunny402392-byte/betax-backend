@@ -22,7 +22,7 @@
 **Percentage:** 5% of deposit amount
 **Capping:** 300% of sponsor's investment
 **Wallet:** Current Income (main wallet)
-**Excluded Users:** BSG0506884, BSG7210166, BSG6645644
+**Excluded Users:** BT70506884, BT77210166, BT76645644
 
 ---
 

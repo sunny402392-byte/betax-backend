@@ -125,7 +125,7 @@ type logs\cron-2026-03-05.log
 
 ### Search for Specific User
 ```bash
-findstr "userId:BSG123" logs\app-2026-03-05.log
+findstr "userId:BT7123" logs\app-2026-03-05.log
 ```
 
 ### Search for Errors
@@ -157,7 +157,7 @@ findstr "MongoDB" logs\error-2026-03-05.log
 
 ### 4. Track User Activity
 ```bash
-findstr "userId:BSG123" logs\app-2026-03-05.log
+findstr "userId:BT7123" logs\app-2026-03-05.log
 ```
 
 ## 🚨 Alert Indicators

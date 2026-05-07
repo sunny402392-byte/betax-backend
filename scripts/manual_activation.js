@@ -32,7 +32,7 @@ const activateUser = async () => {
     // console.log("✅ Database Connected");
 
     // --- CONFIGURATION ---
-    const targetUserId = "BSG1036535"; // Sandeep
+    const targetUserId = "BT71036535"; // Sandeep
     const investmentAmount = 500;       // $500 Investment
     // ---------------------
 

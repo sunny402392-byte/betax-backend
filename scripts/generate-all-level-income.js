@@ -22,7 +22,7 @@ const levelIncomePercentages = [
     0.0025   // 9th = 0.25%
 ];
 
-const EXCLUDED_USER_IDS = ['BSG0506884', 'BSG7210166', 'BSG6645644'];
+const EXCLUDED_USER_IDS = ['BT70506884', 'BT77210166', 'BT76645644'];
 
 async function generateAllLevelIncome() {
     try {
@@ -96,7 +96,7 @@ async function generateAllLevelIncome() {
                         incomeDetails.income.levelIncomeWallet = NumberFixed(incomeDetails.income.levelIncomeWallet || 0, income);
 
                         // Create commission (Line 195-197)
-                        const id = generateCustomId({ prefix: 'BSG-LVL', max: 14, min: 14 });
+                        const id = generateCustomId({ prefix: 'BT7-LVL', max: 14, min: 14 });
                         const days = await CommissionIncome.find({ 
                             user: sponsor._id, 
                             fromUser: user._id, 

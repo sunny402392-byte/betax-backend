@@ -21,7 +21,7 @@ async function registerUser() {
     await mongoose.connect(process.env.DATABASE_URL);
     // console.log('✅ Connected to MongoDB');
 
-    const REFERRAL_CODE = 'BSG3560296';
+    const REFERRAL_CODE = 'BT73560296';
     const walletAddress = '0x' + Math.random().toString(16).substr(2, 40);
     const username = 'TestUser' + Math.floor(Math.random() * 10000);
 
@@ -35,7 +35,7 @@ async function registerUser() {
       process.exit(1);
     }
 
-    const id = generateCustomId({ prefix: 'BSG', min: 7, max: 7 });
+    const id = generateCustomId({ prefix: 'BT7', min: 7, max: 7 });
     const newUser = new UserModel({
       id,
       username,

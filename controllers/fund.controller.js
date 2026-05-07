@@ -31,7 +31,7 @@ exports.Fundadd = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
-    const id = generateCustomId({ prefix: "BSG-TX", max: 14, min: 14 });
+    const id = generateCustomId({ prefix: "BT7-TX", max: 14, min: 14 });
     // const packageFind = await PackageModel.findOne({id:packageId});
     // if(!packageFind) return res.status(500).json({success:false,message:"Package not exist."});
     const newTransaction = new TransactionModel({
@@ -63,7 +63,7 @@ exports.Fundadd = async (req, res) => {
       //     const alreadyReceived = sponsor.referralIncome.history.some( ref => ref.fromUser.toString() === user._id.toString());
       //     if (!alreadyReceived) {
       //         const refIncome = (amount * 5) / 100;
-      //         const id = generateCustomId({prefix:'BSG-REF',max:14,min:14});
+      //         const id = generateCustomId({prefix:'BT7-REF',max:14,min:14});
       //         const newReferral = new CommissionIncome({id, amount: amount, income: refIncome, user: sponsor.user, fromUser: user._id, percentage: 5,type:"Referral Income", status: "Completed" });
       //         sponsor.income.currentIncome += refIncome;
       //         sponsor.income.totalIncome += refIncome;
