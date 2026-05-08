@@ -83,7 +83,7 @@ router.get('/get-rank-reward-leaderboard', isLoggedIn, UserController.RankReward
 router.get('/get-downline-tree', isLoggedIn, UserController.getDownlineTree);
 // ------------ All transation ----------------
 router.get("/get-tansactions" , isLoggedIn , UserController.getTransaction)
-router.get("/all-transactions" , isLoggedIn , UserController.getAllTransactions)
+router.get("/all-transactions" , isLoggedIn , UserController.getTransaction)
 router.get("/7-days-history" , isLoggedIn , UserController.getTransactionOf7days)
 
 //==============================ROI======================================//

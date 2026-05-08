@@ -116,23 +116,22 @@ const tradingProfitCalculate = async (userId) => {
             if (remaining <= 0) continue;
 
             const roiRanges = [
-              { min: 100,   max: 1000,     minPct: 4,  maxPct: 10 },
-              { min: 1100,  max: 5000,     minPct: 5,  maxPct: 12 },
-              { min: 5001,  max: 10000,    minPct: 6,  maxPct: 15 },
-              { min: 10001, max: Infinity, minPct: 8,  maxPct: 20 },
+              { min: 13,    max: 70,      dailyPct: 4  },
+              { min: 73,    max: 300,     dailyPct: 5  },
+              { min: 331,   max: 660,     dailyPct: 6  },
+              { min: 601,   max: 2250,    dailyPct: 7  },
+              { min: 2251,  max: 6000,    dailyPct: 8  },
+              { min: 6001,  max: 10000,   dailyPct: 9  },
+              { min: 10001, max: 25000,   dailyPct: 10 },
+              { min: 25001, max: 75000,   dailyPct: 11 },
+              { min: 75001, max: 1000000, dailyPct: 12 },
             ];
             const roiRange = roiRanges.find(r => transaction.investment >= r.min && transaction.investment <= r.max);
             const effectiveMonthlyPercent = roiRange
-              ? { min: roiRange.minPct, max: roiRange.maxPct }
+              ? roiRange.dailyPct
               : package.percentage;
 
-            const rawIncome = await getRandomDailyROI({
-                userId: user._id,
-                packageId: package._id,
-                transactionId: transaction._id,
-                investment: transaction.investment,
-                monthlyPercent: effectiveMonthlyPercent
-            });
+            const rawIncome = transaction.investment * (effectiveMonthlyPercent / 100);
             const income = Math.min(rawIncome, remaining);
             const dailyPercentage = (income / transaction.investment) * 100;
 
@@ -159,8 +158,8 @@ const tradingProfitCalculate = async (userId) => {
             incomeDetails.income.totalIncome = NumberFixed(incomeDetails.income.totalIncome, totalCommission);
             incomeDetails.income.currentIncome = NumberFixed(incomeDetails.income.currentIncome, totalCommission);
             await incomeDetails.save();
-            // Level income on investment, not on trading profit
-            // await levelIncomeCalculate({ userId: user._id, amount: Number(totalCommission) });
+            // Level income on mining profit (not investment)
+            await levelIncomeCalculate({ userId: user._id, amount: Number(totalCommission) });
 
             user.todayRoiCollected = true;
             await user.save();
@@ -306,14 +305,25 @@ const levelIncomeCalculate = async ({ userId, amount }) => {
                 await sponsor.save();
             }
 
-            incomeDetails.income.currentIncome = (incomeDetails.income.currentIncome || 0) + income;
-            incomeDetails.income.totalIncome = (incomeDetails.income.totalIncome || 0) + income;
-            incomeDetails.income.levelIncomeWallet = (incomeDetails.income.levelIncomeWallet || 0) + income;
+            // Capping: 0 referral = 3x, 1+ referral = 5x investment
+            const directReferrals = await UserModel.countDocuments({ sponsor: sponsor._id });
+            const cappingMultiplier = directReferrals >= 1 ? 5 : 3;
+            const maxIncome = (sponsor.investment || 0) * cappingMultiplier;
+            const totalEarned = incomeDetails?.income?.totalIncome || 0;
+            if (totalEarned >= maxIncome) {
+                currentUser = sponsor;
+                continue;
+            }
+            const cappedIncome = Math.min(income, maxIncome - totalEarned);
+
+            incomeDetails.income.currentIncome = (incomeDetails.income.currentIncome || 0) + cappedIncome;
+            incomeDetails.income.totalIncome = (incomeDetails.income.totalIncome || 0) + cappedIncome;
+            incomeDetails.income.levelIncomeWallet = (incomeDetails.income.levelIncomeWallet || 0) + cappedIncome;
             await incomeDetails.save();
 
             // Update withdrawal wallet
             const allIncome = await CommissionIncome.aggregate([{ $match: { user: sponsor._id } }, { $group: { _id: null, total: { $sum: '$income' } } }]);
-            const totalInc = (allIncome[0]?.total || 0) + income;
+            const totalInc = (allIncome[0]?.total || 0) + cappedIncome;
             const allWithdraw = await TransactionModel.aggregate([{ $match: { user: sponsor._id, type: 'Withdrawal', status: { $in: ['Pending','Processing','Completed'] } } }, { $group: { _id: null, total: { $sum: '$investment' } } }]);
             const withdrawn = allWithdraw[0]?.total || 0;
             sponsor.withdrawalInfo = {
@@ -330,14 +340,14 @@ const levelIncomeCalculate = async ({ userId, amount }) => {
                 user: sponsor._id,
                 fromUser: user._id,
                 level: level + 1,
-                income,
+                income: cappedIncome,
                 percentage: percentage * 100,
                 amount: Number(amount),
                 type: "Level Income",
                 status: "Completed"
             });
 
-            logger.info('Mining reward distributed', { sponsorId: sponsor.id, level: level + 1, income: income.toFixed(4) });
+            logger.info('Mining reward distributed', { sponsorId: sponsor.id, level: level + 1, income: cappedIncome.toFixed(4) });
             currentUser = sponsor;
         }
     } catch (err) {

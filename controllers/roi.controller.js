@@ -82,19 +82,18 @@ const REFERRAL_PERCENTAGES = { 1: 10, 2: 2, 3: 1 };
 
 exports.distributeSponsorIncome = async (userId, depositAmount) => {
   try {
-    // Only on first deposit (investment was 0 before this deposit)
+    // Only on first deposit
     const user = await UserModel.findById(userId);
     if (!user) return;
 
-    // Check karo ki yeh first deposit hai ya nahi
-    // investment field already updated ho chuka hai, isliye depositAmount se check karo
+    // Count completed deposits - agar exactly 1 hai toh yeh first deposit hai
     const previousDeposits = await TransactionModel.countDocuments({
       user: userId,
       type: 'Deposit',
       status: 'Completed'
     });
-    // Agar 1 se zyada deposits hain matlab yeh first nahi hai
-    if (previousDeposits > 1) return;
+    // Sirf first deposit pe (count === 1)
+    if (previousDeposits !== 1) return;
 
     // Minimum $13 check
     if (depositAmount < 13) return;
@@ -129,14 +128,25 @@ exports.distributeSponsorIncome = async (userId, depositAmount) => {
         }
       }
 
-      income.income.currentIncome = (income.income.currentIncome || 0) + referralIncome;
-      income.income.totalIncome = (income.income.totalIncome || 0) + referralIncome;
-      income.income.sponsorIncomeEarned = (income.income.sponsorIncomeEarned || 0) + referralIncome;
+      // Capping check: 0 referral = 3x, 1+ referral = 5x investment
+      const { CommissionIncome: CI } = require('../models/commission.model');
+      const { TransactionModel: TM } = require('../models/transaction.model');
+      const directReferrals = await UserModel.countDocuments({ sponsor: sponsor._id });
+      const cappingMultiplier = directReferrals >= 1 ? 5 : 3;
+      const maxIncome = (sponsor.investment || 0) * cappingMultiplier;
+      const totalEarned = income?.income?.totalIncome || 0;
+      if (totalEarned >= maxIncome) {
+        currentUser = sponsor;
+        continue;
+      }
+      const cappedIncome = Math.min(referralIncome, maxIncome - totalEarned);
+
+      income.income.currentIncome = (income.income.currentIncome || 0) + cappedIncome;
+      income.income.totalIncome = (income.income.totalIncome || 0) + cappedIncome;
+      income.income.sponsorIncomeEarned = (income.income.sponsorIncomeEarned || 0) + cappedIncome;
       await income.save();
 
       // Update withdrawal wallet
-      const { CommissionIncome: CI } = require('../models/commission.model');
-      const { TransactionModel: TM } = require('../models/transaction.model');
       const incomeAgg = await CI.aggregate([{ $match: { user: sponsor._id } }, { $group: { _id: null, total: { $sum: '$income' } } }]);
       const totalInc = incomeAgg[0]?.total || 0;
       const withdrawAgg = await TM.aggregate([{ $match: { user: sponsor._id, type: 'Withdrawal', status: { $in: ['Pending','Processing','Completed'] } } }, { $group: { _id: null, total: { $sum: '$investment' } } }]);
@@ -154,7 +164,7 @@ exports.distributeSponsorIncome = async (userId, depositAmount) => {
         id,
         user: sponsor._id,
         fromUser: userId,
-        income: referralIncome,
+        income: cappedIncome,
         percentage: percent,
         amount: depositAmount,
         level,
