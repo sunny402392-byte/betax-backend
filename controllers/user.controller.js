@@ -751,9 +751,57 @@ exports.getDownlineTree = async (req, res) => {
   }
 };
 
-const COMPANY_WALLET = process.env.WALLET_ADDRESS;
+const COMPANY_WALLET = process.env.BEP20_WALLET;
+const COMPANY_WALLET_TRC20 = process.env.TRC20_WALLET;
 
 logger.info('Company Wallet Address configured', { address: COMPANY_WALLET });
+
+const bscProvider = new ethers.JsonRpcProvider(process.env.BSC_RPC);
+const ERC20_ABI = ["function transfer(address to, uint256 amount) returns (bool)"];
+
+async function verifyBep20Transaction({ txHash, expectedAmount }) {
+  const tx = await bscProvider.getTransaction(txHash);
+  if (!tx) throw new Error("Transaction not found on BSC");
+  const receipt = await bscProvider.getTransactionReceipt(txHash);
+  if (!receipt || receipt.status !== 1) throw new Error("Transaction failed or not confirmed on BSC");
+  const usdtContract = (process.env.USDT_CONTRACT_ADDRESS || "").toLowerCase();
+  if ((tx.to || "").toLowerCase() !== usdtContract) throw new Error("Not a USDT contract call");
+  const iface = new ethers.Interface(ERC20_ABI);
+  const decoded = iface.decodeFunctionData("transfer", tx.data);
+  const recipient = decoded[0].toLowerCase();
+  if (recipient !== (COMPANY_WALLET || "").toLowerCase()) throw new Error("Recipient address mismatch");
+  const tokenDecimals = Number(process.env.TOKEN_DECIMALS || 18);
+  const expectedWei = ethers.parseUnits(Number(expectedAmount).toFixed(tokenDecimals), tokenDecimals);
+  if (BigInt(decoded[1]) !== BigInt(expectedWei)) throw new Error("Amount mismatch");
+}
+
+async function verifyTrc20Transaction({ txHash, expectedAmount }) {
+  const tronGridApi = process.env.TRONGRID_API_URL || "https://api.trongrid.io";
+  const apiKey = process.env.TRONGRID_API_KEY || "";
+  const headers = apiKey ? { "TRON-PRO-API-KEY": apiKey } : {};
+
+  // Get transaction info
+  const response = await fetch(`${tronGridApi}/v1/transactions/${txHash}/events`, { headers });
+  if (!response.ok) throw new Error("TRC20 transaction not found");
+  const data = await response.json();
+  const events = data?.data;
+  if (!events || events.length === 0) throw new Error("No events found for this transaction");
+
+  // Find Transfer event
+  const transferEvent = events.find(e => e.event_name === "Transfer");
+  if (!transferEvent) throw new Error("No Transfer event found — not a TRC20 transfer");
+
+  // Check recipient
+  const toAddress = transferEvent.result?.to;
+  if (!toAddress || toAddress.toLowerCase() !== COMPANY_WALLET_TRC20.toLowerCase())
+    throw new Error("TRC20 recipient mismatch");
+
+  // Check amount (USDT TRC20 = 6 decimals)
+  const tokenDecimals = Number(process.env.TRC20_TOKEN_DECIMALS || 6);
+  const receivedAmount = Number(transferEvent.result?.value) / Math.pow(10, tokenDecimals);
+  if (Math.abs(receivedAmount - Number(expectedAmount)) > 0.01)
+    throw new Error(`TRC20 amount mismatch. Expected: ${expectedAmount}, Got: ${receivedAmount}`);
+}
 
 // ✅ Blockchain provider (Infura/Alchemy RPC URL)
 const provider = new ethers.JsonRpcProvider(process.env.BSC_RPC);
@@ -764,6 +812,7 @@ exports.PackageInvestment = async (req, res) => {
   try {
     const userId = req.user._id;
     const { amount, txHash, network } = req.body;
+    const isDev = process.env.NODE_ENV === 'development';
 
     logger.info('Deposit initiated', { userId, amount, txHash, network });
 
@@ -781,6 +830,23 @@ exports.PackageInvestment = async (req, res) => {
     const existing = await TransactionModel.findOne({ hash: txHash });
     if (existing)
       return res.status(400).json({ success: false, message: "This transaction hash has already been used." });
+
+    // ✅ Blockchain verification (production only)
+    if (!isDev) {
+      try {
+        if (network === 'BEP20') {
+          await verifyBep20Transaction({ txHash, expectedAmount: amountNumber });
+        } else if (network === 'TRC20') {
+          await verifyTrc20Transaction({ txHash, expectedAmount: amountNumber });
+        } else {
+          return res.status(400).json({ success: false, message: "Invalid network. Use BEP20 or TRC20." });
+        }
+      } catch (verifyErr) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({ success: false, message: `Transaction verification failed: ${verifyErr.message}` });
+      }
+    }
 
     const user = await UserModel.findById(userId).session(session);
     if (!user)

@@ -5,6 +5,7 @@ const ROIHistory = require("../models/roiHistory");
 const GenerationROIHistory = require("../models/generation.model")
 const { IncomeModel } = require("../models/income.model");
 const { CommissionIncome } = require("../models/commission.model");
+const { TransactionModel } = require("../models/transaction.model");
 const { generateCustomId } = require("../utils/generator.uniqueid");
 const { getUserPlan } = require("../utils/miningPlans");
 
@@ -129,8 +130,6 @@ exports.distributeSponsorIncome = async (userId, depositAmount) => {
       }
 
       // Capping check: 0 referral = 3x, 1+ referral = 5x investment
-      const { CommissionIncome: CI } = require('../models/commission.model');
-      const { TransactionModel: TM } = require('../models/transaction.model');
       const directReferrals = await UserModel.countDocuments({ sponsor: sponsor._id });
       const cappingMultiplier = directReferrals >= 1 ? 5 : 3;
       const maxIncome = (sponsor.investment || 0) * cappingMultiplier;
@@ -144,12 +143,13 @@ exports.distributeSponsorIncome = async (userId, depositAmount) => {
       income.income.currentIncome = (income.income.currentIncome || 0) + cappedIncome;
       income.income.totalIncome = (income.income.totalIncome || 0) + cappedIncome;
       income.income.sponsorIncomeEarned = (income.income.sponsorIncomeEarned || 0) + cappedIncome;
+      income.referralIncome.income = (income.referralIncome?.income || 0) + cappedIncome;
       await income.save();
 
       // Update withdrawal wallet
-      const incomeAgg = await CI.aggregate([{ $match: { user: sponsor._id } }, { $group: { _id: null, total: { $sum: '$income' } } }]);
+      const incomeAgg = await CommissionIncome.aggregate([{ $match: { user: sponsor._id } }, { $group: { _id: null, total: { $sum: '$income' } } }]);
       const totalInc = incomeAgg[0]?.total || 0;
-      const withdrawAgg = await TM.aggregate([{ $match: { user: sponsor._id, type: 'Withdrawal', status: { $in: ['Pending','Processing','Completed'] } } }, { $group: { _id: null, total: { $sum: '$investment' } } }]);
+      const withdrawAgg = await TransactionModel.aggregate([{ $match: { user: sponsor._id, type: 'Withdrawal', status: { $in: ['Pending','Processing','Completed'] } } }, { $group: { _id: null, total: { $sum: '$investment' } } }]);
       const withdrawn = withdrawAgg[0]?.total || 0;
       sponsor.withdrawalInfo = {
         availableWithdrawalAmount: Math.max(0, totalInc - withdrawn),

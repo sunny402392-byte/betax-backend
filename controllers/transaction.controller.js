@@ -1,4 +1,4 @@
-const { isAddress } = require("ethers");
+const { isAddress, ethers } = require("ethers");
 const { CommissionIncome } = require("../models/commission.model");
 const { IncomeModel } = require("../models/income.model");
 const { PackageModel } = require("../models/package.model");
@@ -8,50 +8,95 @@ const {
   generatorUniqueId,
   generateCustomId,
 } = require("../utils/generator.uniqueid");
-const { levelIncomeCalculate, sponsorIncomeCalculate } = require("../utils/levelIncome.calculation");
+const { levelIncomeCalculate } = require("../utils/levelIncome.calculation");
+const { distributeSponsorIncome } = require("./roi.controller");
 const { sendUsdtWithdrawal } = require("../utils/wallet.token");
 const { getOtpGenerate } = require("../utils/getOtpGenerate");
 const { sendToOtp } = require("../utils/sendtootp.nodemailer");
 
+const provider = new ethers.JsonRpcProvider(process.env.BSC_RPC);
+const ERC20_ABI = ["function transfer(address to, uint256 amount) returns (bool)"];
+
+async function verifyBscTransaction({ txHash, expectedFrom, expectedTo, expectedAmount }) {
+  const tx = await provider.getTransaction(txHash);
+  if (!tx) throw new Error("Transaction not found on blockchain");
+
+  const receipt = await provider.getTransactionReceipt(txHash);
+  if (!receipt || receipt.status !== 1) throw new Error("Transaction failed or not confirmed on blockchain");
+
+  const usdtContract = (process.env.USDT_CONTRACT_ADDRESS || "").toLowerCase();
+  const tokenDecimals = Number(process.env.TOKEN_DECIMALS || 18);
+
+  if ((tx.to || "").toLowerCase() !== usdtContract)
+    throw new Error("Transaction is not a USDT contract call");
+
+  if ((tx.from || "").toLowerCase() !== expectedFrom.toLowerCase())
+    throw new Error("Sender address mismatch");
+
+  const iface = new ethers.Interface(ERC20_ABI);
+  const decoded = iface.decodeFunctionData("transfer", tx.data);
+  const recipient = decoded[0].toLowerCase();
+  const decodedAmount = decoded[1];
+
+  if (recipient !== expectedTo.toLowerCase())
+    throw new Error("Recipient address mismatch");
+
+  const expectedAmountWei = ethers.parseUnits(Number(expectedAmount).toFixed(tokenDecimals), tokenDecimals);
+  if (BigInt(decodedAmount) !== BigInt(expectedAmountWei))
+    throw new Error("Transaction amount mismatch");
+}
+
 // 1.WALLET INVESTMENT
 exports.WalletInvestmentRequest = async (req, res) => {
   const { amount, packageId } = req.body;
-  if (req.body.txResponse === undefined)
-    return res
-      .status(500)
-      .json({ success: false, message: "Transaction response is required." });
-  if (!amount || amount <= 0 || !packageId)
-    return res
-      .status(500)
-      .json({ success: false, message: "Amount & Package ID are required." });
+  const isDev = process.env.NODE_ENV === 'development';
 
-  // Minimum deposit validation
+  if (!isDev && req.body.txResponse === undefined)
+    return res.status(500).json({ success: false, message: "Transaction response is required." });
+  if (!amount || amount <= 0 || !packageId)
+    return res.status(500).json({ success: false, message: "Amount & Package ID are required." });
+
   const amountNumber = Number(amount);
   if (amountNumber < 100)
-    return res
-      .status(400)
-      .json({ success: false, message: "Minimum deposit amount is $100." });
-
-  // Multiple of 100 validation
+    return res.status(400).json({ success: false, message: "Minimum deposit amount is $100." });
   if (amountNumber % 100 !== 0)
-    return res
-      .status(400)
-      .json({ success: false, message: "Investment amount must be in multiples of $100 (e.g., $100, $200, $300)." });
+    return res.status(400).json({ success: false, message: "Investment amount must be in multiples of $100 (e.g., $100, $200, $300)." });
 
-  const { from, to, hash } = req.body.txResponse;
+  const { from, to, hash } = isDev
+    ? { from: 'dev-bypass', to: process.env.WALLET_ADDRESS, hash: `DEV-${Date.now()}` }
+    : req.body.txResponse;
+
   try {
+    // ✅ Duplicate hash check (skip in dev)
+    if (!isDev) {
+      const existingTx = await TransactionModel.findOne({ hash });
+      if (existingTx)
+        return res.status(409).json({ success: false, message: "Transaction already processed." });
+    }
+
     const user = await UserModel.findById(req.user._id);
     if (!user)
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found" });
+
+    // ✅ Blockchain verification (production only)
+    if (!isDev) {
+      try {
+        await verifyBscTransaction({
+          txHash: hash,
+          expectedFrom: from,
+          expectedTo: process.env.WALLET_ADDRESS,
+          expectedAmount: amountNumber,
+        });
+      } catch (verifyErr) {
+        return res.status(400).json({ success: false, message: `Transaction verification failed: ${verifyErr.message}` });
+      }
+    }
+
     const id = generateCustomId({ prefix: "BT7-TX", max: 14, min: 14 });
     const packageFind = await PackageModel.findById(packageId);
     if (!packageFind)
-      return res
-        .status(500)
-        .json({ success: false, message: "Package not exist." });
-    // if(packageFind.users.includes(user._id)) return res.status(500).json({success:false,message:"Already package purchased."});
+      return res.status(500).json({ success: false, message: "Package not exist." });
+
     const newTransaction = new TransactionModel({
       id,
       user: user._id,
@@ -67,7 +112,6 @@ exports.WalletInvestmentRequest = async (req, res) => {
     user.transactions.push(newTransaction._id);
     user.packages.push(packageFind._id);
     user.investment += amountNumber;
-    // Automatically lock capital amount when investment is made
     user.active.isCapitalLocked = true;
     packageFind.users.push(user._id);
     await packageFind.save();
@@ -78,25 +122,11 @@ exports.WalletInvestmentRequest = async (req, res) => {
     await newTransaction.save();
     await user.save();
 
-    // ✅ Sponsor income on investment amount (5%)
-    await sponsorIncomeCalculate({ 
-      userId: user._id, 
-      amount: amountNumber 
-    });
+    await distributeSponsorIncome(user._id, amountNumber);
 
-    // ❌ Level income will be distributed on monthly ROI, not on investment
-    // await levelIncomeCalculate({ userId: user._id, amount: amountNumber });
-
-    res.status(200).json({
-      success: true,
-      message: "Package added successfully",
-      data: user,
-    });
+    res.status(200).json({ success: true, message: "Package added successfully", data: user });
   } catch (error) {
-    // console.log(error);
-    res
-      .status(500)
-      .json({ success: false, message: "Server error", error: error.message });
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
 

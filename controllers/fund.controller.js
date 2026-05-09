@@ -6,12 +6,13 @@ const { TransactionModel } = require("../models/transaction.model");
 const { UserModel } = require("../models/user.model");
 const { generateCustomId } = require("../utils/generator.uniqueid");
 const { levelIncomeCalculate } = require("../utils/levelIncome.calculation");
+const { distributeSponsorIncome } = require("./roi.controller");
 const { sendToOtp } = require("../utils/sendtootp.nodemailer");
 const { ethers } = require("ethers");
 const { isAddress } = require("ethers");
 exports.Fundadd = async (req, res) => {
   try {
-    const { amount, packageId, username } = req.body;
+    const { amount, packageId, username, hash } = req.body;
     if (!amount || amount <= 0 || !username)
       return res
         .status(500)
@@ -38,7 +39,7 @@ exports.Fundadd = async (req, res) => {
       id,
       user: user._id,
       investment: amount,
-      hash: user.account,
+      hash: hash || null,
       clientAddress: user.account,
       mainAddress: "Admin Deposit",
       role: "ADMIN",
@@ -58,27 +59,8 @@ exports.Fundadd = async (req, res) => {
     }
     await newTransaction.save();
     if (user.sponsor) {
-      // const sponsor = await IncomeModel.findOne({user:user.sponsor}).populate({ path: 'referralIncome.history', select: 'fromUser user' });
-      // if (sponsor) {
-      //     const alreadyReceived = sponsor.referralIncome.history.some( ref => ref.fromUser.toString() === user._id.toString());
-      //     if (!alreadyReceived) {
-      //         const refIncome = (amount * 5) / 100;
-      //         const id = generateCustomId({prefix:'BT7-REF',max:14,min:14});
-      //         const newReferral = new CommissionIncome({id, amount: amount, income: refIncome, user: sponsor.user, fromUser: user._id, percentage: 5,type:"Referral Income", status: "Completed" });
-      //         sponsor.income.currentIncome += refIncome;
-      //         sponsor.income.totalIncome += refIncome;
-      //         sponsor.referralIncome.income += refIncome;
-      //         sponsor.referralIncome.history.push(newReferral._id);
-      //         await newReferral.save();
-      //         await sponsor.save();
-      //     }
-      // }
-      // Level income on investment amount
-      await levelIncomeCalculate({
-        userId: user._id,
-        amount: Number(amount),
-        levelActive: true,
-      });
+      await distributeSponsorIncome(user._id, Number(amount));
+      await levelIncomeCalculate({ userId: user._id, amount: Number(amount) });
     }
     await user.save();
     res.status(200).json({
