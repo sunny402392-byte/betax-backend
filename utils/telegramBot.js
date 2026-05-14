@@ -1,13 +1,8 @@
 const TelegramBot = require("node-telegram-bot-api");
-const { UserModel } = require("../models/user.model");
-const { IncomeModel } = require("../models/income.model");
-const { generateCustomId } = require("../utils/generator.uniqueid");
-const { getToken } = require("../utils/token.generator");
-const bcrypt = require("bcryptjs");
-const logger = require("../utils/logger");
+const logger = require("./logger");
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID; // Admin ka chat_id
 
 if (!BOT_TOKEN || BOT_TOKEN === "your_bot_token_here") {
   logger.warn("Telegram bot token not set - bot disabled");
@@ -15,138 +10,93 @@ if (!BOT_TOKEN || BOT_TOKEN === "your_bot_token_here") {
   return;
 }
 
+if (!ADMIN_CHAT_ID) {
+  logger.warn("TELEGRAM_ADMIN_CHAT_ID not set - chat relay disabled");
+}
+
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
-logger.info("Telegram bot started");
+logger.info("Telegram chatbot started");
 
-// Register or login user from Telegram
-const registerOrLoginTelegram = async ({ telegramId, username, firstName, referralCode }) => {
-  try {
-    const telegramHandle = `@${username || telegramId}`;
-
-    // Check if already exists
-    let user = await UserModel.findOne({
-      $or: [
-        { telegram: telegramHandle },
-        { telegram: telegramId.toString() }
-      ]
-    }).populate("incomeDetails");
-
-    let isNew = false;
-
-    if (!user) {
-      // Create new account
-      let sponsorFind = null;
-      if (referralCode) {
-        sponsorFind = await UserModel.findOne({ referralLink: referralCode });
-      }
-
-      const id = generateCustomId({ prefix: "BT7", min: 7, max: 7 });
-      const hashedPassword = await bcrypt.hash(telegramId.toString() + id, 10);
-
-      user = new UserModel({
-        id,
-        username: firstName || username || `user_${telegramId}`,
-        telegram: telegramHandle,
-        email: `${telegramId}@tg.bittrade7.com`,
-        password: hashedPassword,
-        referralLink: id,
-        ...(sponsorFind && { sponsor: sponsorFind._id }),
-      });
-
-      const newIncomes = new IncomeModel({ user: user._id });
-      user.incomeDetails = newIncomes._id;
-
-      if (sponsorFind) {
-        sponsorFind.partners.push(user._id);
-        await sponsorFind.save();
-        let sponsor = sponsorFind;
-        while (sponsor) {
-          sponsor.totalTeam += 1;
-          sponsor.teamMembers.push(user._id);
-          await sponsor.save();
-          sponsor = sponsor.sponsor ? await UserModel.findById(sponsor.sponsor) : null;
-        }
-      }
-
-      user.active.isVerified = true;
-      user.active.isActive = false;
-
-      await newIncomes.save();
-      await user.save();
-      isNew = true;
-      logger.info("Telegram account created", { username, id });
-    }
-
-    // Generate fresh token
-    const token = await getToken(user);
-    user.token.token = token;
-    await user.save();
-
-    return { success: true, user, token, isNew };
-  } catch (err) {
-    logger.error("Telegram register/login error", { error: err.message });
-    return { success: false, error: err.message };
-  }
-};
+// user chatId -> user info map (in-memory, restart pe reset)
+// Production mein Redis ya DB use kar sakte hain
+const userSessions = new Map(); // userId -> { chatId, firstName, username }
+const adminReplying = new Map(); // adminChatId -> userChatId (jab admin reply kar raha ho)
 
 // /start command
-bot.onText(/\/start(.*)/, async (msg, match) => {
+bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
-  const telegramId = msg.from.id.toString();
-  const username = msg.from.username || `user_${telegramId}`;
-  const firstName = msg.from.first_name || username;
-  const referralCode = match[1]?.trim() || null;
+  const firstName = msg.from.first_name || "User";
+  const username = msg.from.username || null;
+
+  // Save user session
+  userSessions.set(chatId.toString(), { chatId, firstName, username });
+
+  await bot.sendMessage(chatId,
+    `👋 Hello ${firstName}!\n\nWelcome to *BitTrade7 Support*.\n\nSend your message and our support team will get back to you shortly. 🙏`,
+    { parse_mode: "Markdown" }
+  );
+});
+
+// User ka message admin ko forward karo
+bot.on("message", async (msg) => {
+  const chatId = msg.chat.id.toString();
+  const text = msg.text;
+
+  // Ignore commands
+  if (!text || text.startsWith("/")) return;
+
+  // Agar admin reply kar raha hai
+  if (chatId === ADMIN_CHAT_ID?.toString()) {
+    // Admin ne kisi user ko reply kiya
+    if (msg.reply_to_message) {
+      // Reply message se user chatId nikalo
+      const originalText = msg.reply_to_message.text || "";
+      const match = originalText.match(/\[UserID: (\d+)\]/);
+      if (match) {
+        const userChatId = match[1];
+        try {
+          await bot.sendMessage(userChatId,
+            `💬 *Support Team:*\n\n${text}`,
+            { parse_mode: "Markdown" }
+          );
+          await bot.sendMessage(ADMIN_CHAT_ID, "✅ Reply sent to user.", { parse_mode: "Markdown" });
+        } catch (err) {
+          await bot.sendMessage(ADMIN_CHAT_ID, "❌ Failed to send reply to user.");
+          logger.error("Bot reply to user failed", { error: err.message });
+        }
+      } else {
+        await bot.sendMessage(ADMIN_CHAT_ID, "⚠️ Could not identify user. Please reply to a forwarded user message.");
+      }
+    }
+    return; // Admin ke baaki messages ignore karo
+  }
+
+  // Normal user ka message — admin ko forward karo
+  if (!ADMIN_CHAT_ID) return;
+
+  const firstName = msg.from.first_name || "Unknown";
+  const username = msg.from.username ? `@${msg.from.username}` : "No username";
+
+  // User session save karo
+  userSessions.set(chatId, { chatId, firstName, username });
 
   try {
-    const result = await registerOrLoginTelegram({ telegramId, username, firstName, referralCode });
+    await bot.sendMessage(
+      ADMIN_CHAT_ID,
+      `📩 *New Message*\n\n👤 Name: ${firstName}\n🔗 Username: ${username}\n[UserID: ${chatId}]\n\n💬 Message:\n${text}`,
+      { parse_mode: "Markdown" }
+    );
 
-    if (!result.success) {
-      await bot.sendMessage(chatId, "❌ Something went wrong. Please try again.");
-      return;
-    }
-
-    const loginUrl = `${FRONTEND_URL}/tg-auth?token=${result.token}&uid=${result.user._id}&role=${result.user.role}`;
-    const displayName = firstName || username;
-
-    const welcomeText =
-`🚀 Welcome to BITTRADE7 ${displayName} 🚀
-
-🌐 Smart Digital Platform with Mining Opportunities
-
-BITTRADE7 brings you a modern platform where technology, digital networking, and mining opportunities come together for a smarter future.
-
-⛏️ Mining Features:
-✅ Multiple Mining Levels
-✅ Daily Mining Rewards
-✅ Referral & Team Growth Benefits
-
-🔥 Start Your Digital Mining Journey Today!`;
-
-    const referralLink = `${FRONTEND_URL}/register?ref=${result.user.referralLink}`;
-    const shareText = encodeURIComponent(`🚀 Join BitTrade7 Mining!\n\nEarn daily crypto rewards by mining!\nUse my referral link to get started:\n${referralLink}`);
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${shareText}`;
-
-    await bot.sendMessage(chatId, welcomeText, {
-      parse_mode: "Markdown",
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: "🚀 Start Now", web_app: { url: loginUrl } },
-            { text: "👥 Invite Friend", url: shareUrl }
-          ]
-        ]
-      }
-    });
-
+    // User ko acknowledgement
+    await bot.sendMessage(chatId,
+      `✅ Your message has been received. Our support team will reply shortly.`,
+    );
   } catch (err) {
-    logger.error("Bot /start error", { error: err.message });
-    await bot.sendMessage(chatId, "❌ Error occurred. Please try again.");
+    logger.error("Bot forward to admin failed", { error: err.message });
   }
 });
 
-// API endpoint for manual telegram register (from web)
-const autoRegisterFromTelegram = async ({ telegramId, username, referralCode }) => {
-  return registerOrLoginTelegram({ telegramId, username, firstName: username, referralCode });
-};
+// autoRegisterFromTelegram — purane code ke saath compatibility ke liye
+const autoRegisterFromTelegram = null;
 
 module.exports = { bot, autoRegisterFromTelegram };

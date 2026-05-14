@@ -26,6 +26,8 @@ exports.WalletRegister = async (req, res) => {
     if (!username || !password)
       return res.status(400).json({ success: false, message: "Username and password required." });
 
+    if (!referral)
+      return res.status(400).json({ success: false, message: "Referral code is required." });
     // At least one contact required
     if (!email && !mobile && !telegram)
       return res.status(400).json({ success: false, message: "At least one of Email, Mobile, or Telegram ID is required." });

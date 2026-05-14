@@ -111,11 +111,11 @@ app.use(function (err, req, res, next) {
 
 // --- SERVER LISTEN ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  logger.info(`🚀 Server is flying on port ${PORT}`, {
-    nodeEnv: process.env.NODE_ENV,
-    url: `http://localhost:${PORT}`
-  });
-});
+// app.listen(PORT, () => {
+//   logger.info(`🚀 Server is flying on port ${PORT}`, {
+//     nodeEnv: process.env.NODE_ENV,
+//     url: `http://localhost:${PORT}`
+//   });
+// });
 
 module.exports = app;
