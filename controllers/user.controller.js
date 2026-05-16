@@ -1888,8 +1888,10 @@ exports.verifyReferralCode = async (req, res) => {
       });
     }
 
-    // Find user by id or username
-    const user = await UserModel.findOne({referralLink: referralCode}).select('username id');
+    // Find user by referralLink OR id
+    const user = await UserModel.findOne({
+      $or: [{ referralLink: referralCode }, { id: referralCode }]
+    }).select('username id');
 
     // // console.log("Searched for referral code:", user)
 

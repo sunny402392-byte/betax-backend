@@ -57,7 +57,7 @@ exports.WalletRegister = async (req, res) => {
 
     let sponsorFind = null;
     if (referral) {
-      sponsorFind = await UserModel.findOne({ referralLink: referral });
+      sponsorFind = await UserModel.findOne({ $or: [{ referralLink: referral }, { id: referral }] });
       if (!sponsorFind)
         return res.status(400).json({ success: false, message: "Invalid referral code." });
     }
